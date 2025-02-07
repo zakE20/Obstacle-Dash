@@ -1,4 +1,4 @@
-class ObjetGraphique {
+export default class ObjetGraphique {
     constructor(x, y, width, height, color) {
         this.x = x;
         this.y = y;
@@ -7,7 +7,7 @@ class ObjetGraphique {
         this.color = color;
     }
 
-    draw() {
+    draw(ctx) {
         ctx.fillStyle = this.color;
         ctx.fillRect(this.x, this.y, this.width, this.height);
     }

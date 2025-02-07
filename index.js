@@ -1,7 +1,9 @@
-let canvas=document.getElementById("gameCanvas");
-let ctx=canvas.getContext("2d");
+import Game from "./Game.js";
 
-canvas.style.backgroundColor="lightblue";
-canvas.style.border="1px solid black";
-canvas.style.margin="auto";
-canvas.style.display="flex";
+let canvas = document.getElementById("gameCanvas");
+canvas.width = 600;
+canvas.height = 600;
+canvas.style.backgroundColor = "red";
+
+let game = new Game(canvas);
+game.start();
