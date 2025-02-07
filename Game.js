@@ -91,34 +91,37 @@ export default class Game {
         let dy = this.player.y - this.exit.y;
         
         if (Math.sqrt(dx * dx + dy * dy) < 20) {
-            alert("Bravo ! Niveau suivant !");
+            let audio = new Audio("bravo.mp3");
+            audio.play();
             
-            // Réinitialiser la position du joueur
+            alert("Bravo ! Niveau suivant !");
             this.player.x = 50;
             this.player.y = 50;
-    
-            // 🔄 Réinitialiser les touches de mouvement
-            this.inputStates = {
-                ArrowLeft: false,
-                ArrowRight: false,
-                ArrowUp: false,
-                ArrowDown: false,
-            };
-    
-            // Charger un nouveau niveau (ajouter de nouveaux obstacles, modifier la map, etc.)
+            this.inputStates = { ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false };
             this.loadNextLevel();
         }
     }
     
+    
     loadNextLevel() {
-        // Ici, tu peux modifier les obstacles pour chaque niveau
-        this.obstacles = [
-            new Obstacle(100, 200, 150, 40),
-            new Obstacle(300, 400, 120, 50),
-            new Obstacle(400, 250, 80, 30)
-        ];
+        this.level = (this.level || 1) + 1; // Augmenter le niveau
+    
+        // Augmenter la vitesse du joueur légèrement à chaque niveau
+        this.player.speed += 0.5;
+    
+        // Ajouter plus d'obstacles à chaque niveau
+        this.obstacles = [];
+        for (let i = 0; i < this.level + 2; i++) { // Plus d'obstacles avec le niveau
+            let x = Math.random() * (this.canvas.width - 100);
+            let y = Math.random() * (this.canvas.height - 100);
+            let width = Math.random() * 80 + 20; // Taille aléatoire
+            let height = Math.random() * 60 + 20;
+            this.obstacles.push(new Obstacle(x, y, width, height));
+        }
     
         this.objetsGraphiques = [this.player, this.exit, ...this.obstacles];
+    
+        console.log(`Niveau ${this.level} chargé !`);
     }
     
 }

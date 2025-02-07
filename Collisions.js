@@ -12,6 +12,16 @@ export default class Collisions {
         for (let obs of obstacles) {
             if (this.checkCollision(player, obs)) {
                 console.log("Collision détectée !");
+                
+                // Jouer un son de collision
+                let audio = new Audio("failure.mp3");
+                audio.play();
+
+                // Vibrer sur mobile (si supporté)
+                if (navigator.vibrate) {
+                    navigator.vibrate(200); // Vibration pendant 200ms
+                }
+
                 return true;
             }
         }
