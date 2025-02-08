@@ -2,6 +2,9 @@ import Player from "./Player.js";
 import Obstacle from "./Obstacle.js";
 import Exit from "./Exit.js";
 import Collisions from "./Collisions.js";
+import Trap from "./Trap.js";
+import Bonus from "./Bonus.js";
+import Enemy from "./Enemy.js";
 
 export default class Game {
     constructor(canvas) {
@@ -15,36 +18,29 @@ export default class Game {
             ArrowDown: false,
         };
 
+        this.level = 1;
+        this.timeLeft = 30;
+        this.timerInterval = null;
+
         this.objetsGraphiques = [];
 
         this.init();
     }
 
     init() {
-        // Création du joueur
         this.player = new Player(50, 50);
-        this.objetsGraphiques.push(this.player);
-
-        // Création des obstacles
-        this.obstacles = [
-            new Obstacle(200, 300, 100, 50),
-            new Obstacle(350, 200, 80, 40)
-        ];
-        this.objetsGraphiques.push(...this.obstacles);
-
-        // Création de la sortie
         this.exit = new Exit(550, 550);
-        this.objetsGraphiques.push(this.exit);
+        
+        this.objetsGraphiques.push(this.player, this.exit);
 
-        // Écoute des événements clavier
         window.addEventListener("keydown", (e) => this.handleKey(e, true));
         window.addEventListener("keyup", (e) => this.handleKey(e, false));
 
-        console.log("Game initialisé");
+        this.loadNextLevel();
     }
 
     start() {
-        console.log("Game démarré");
+        this.startTimer();
         requestAnimationFrame(this.mainLoop.bind(this));
     }
 
@@ -57,11 +53,45 @@ export default class Game {
     update() {
         this.movePlayer();
         this.checkWin();
+
+        // Vérifier collisions avec pièges
+        this.traps.forEach(trap => {
+            if (Collisions.checkCollision(this.player, trap)) {
+                this.timeLeft = Math.max(0, this.timeLeft - 3);
+            }
+        });
+
+        // Vérifier collisions avec bonus
+        this.bonuses.forEach((bonus, index) => {
+            if (Collisions.checkCollision(this.player, bonus)) {
+                this.timeLeft += 5;
+                this.bonuses.splice(index, 1);
+            }
+        });
+
+        // Déplacement des ennemis
+        this.enemies.forEach(enemy => {
+            enemy.moveTowards(this.player);
+            if (Collisions.checkCollision(this.player, enemy)) {
+                alert("Attrapé par un ennemi ! Game Over !");
+                window.location.reload();
+            }
+        });
     }
 
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.objetsGraphiques.forEach(obj => obj.draw(this.ctx));
+
+        // Affichage du chrono
+        this.ctx.fillStyle = "white";
+        this.ctx.font = "20px Arial";
+        this.ctx.fillText(`Temps: ${this.timeLeft}s`, 10, 30);
+
+        // Mode nuit progressif
+        let darkness = Math.min(0.1 * this.level, 0.5);
+        this.ctx.fillStyle = `rgba(0, 0, 0, ${darkness})`;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
     handleKey(event, isPressed) {
@@ -79,49 +109,112 @@ export default class Game {
         if (this.inputStates.ArrowUp) this.player.y -= this.player.speed;
         if (this.inputStates.ArrowDown) this.player.y += this.player.speed;
 
-        // Vérifier les collisions avec les obstacles
         if (Collisions.checkCollisions(this.player, this.obstacles)) {
             this.player.x = oldX;
             this.player.y = oldY;
         }
     }
+    getSafePosition(avoidX, avoidY, margin = 50) {
+        let x, y;
+        do {
+            x = Math.random() * (this.canvas.width - 100);
+            y = Math.random() * (this.canvas.height - 100);
+        } while (Math.abs(x - avoidX) < margin && Math.abs(y - avoidY) < margin);
+        return { x, y };
+    }
 
     checkWin() {
         let dx = this.player.x - this.exit.x;
         let dy = this.player.y - this.exit.y;
-        
+
         if (Math.sqrt(dx * dx + dy * dy) < 20) {
-            let audio = new Audio("bravo.mp3");
-            audio.play();
-            
             alert("Bravo ! Niveau suivant !");
-            this.player.x = 50;
-            this.player.y = 50;
-            this.inputStates = { ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false };
             this.loadNextLevel();
         }
     }
-    
-    
+
+    startTimer() {
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        
+        this.timeLeft = Math.max(10, 30 - (this.level * 2));
+
+        this.timerInterval = setInterval(() => {
+            this.timeLeft--;
+
+            if (this.timeLeft <= 0) {
+                clearInterval(this.timerInterval);
+                alert("Temps écoulé ! Game Over !");
+                window.location.reload();
+            }
+        }, 1000);
+    }
+    gameOver() {
+        clearInterval(this.timerInterval);
+        
+        let gameOverSound = document.getElementById("gameOverSound");
+        gameOverSound.play();
+
+        alert("💀 GAME OVER ! Vous avez été attrapé !");
+        setTimeout(() => {
+            window.location.reload();
+        }, 5000);
+    }
+
+    update() {
+        this.movePlayer();
+        this.checkWin();
+
+        this.enemies.forEach(enemy => {
+            enemy.moveTowards(this.player);
+            if (Collisions.checkCollision(this.player, enemy)) {
+                this.gameOver();
+            }
+        });
+    }
     loadNextLevel() {
-        this.level = (this.level || 1) + 1; // Augmenter le niveau
+        this.level++;
+        this.canvas.width = Math.max(this.canvas.width * 0.9, 300);
+        this.canvas.height = Math.max(this.canvas.height * 0.9, 300);
     
-        // Augmenter la vitesse du joueur légèrement à chaque niveau
-        this.player.speed += 0.5;
+        this.player.x = 50; 
+        this.player.y = 50;  
     
-        // Ajouter plus d'obstacles à chaque niveau
+        this.player.speed = Math.min(this.player.speed + 0.5, 10);
+    
+        this.exit.x = Math.min(this.exit.x, this.canvas.width - 50);
+        this.exit.y = Math.min(this.exit.y, this.canvas.height - 50);
+    
         this.obstacles = [];
-        for (let i = 0; i < this.level + 2; i++) { // Plus d'obstacles avec le niveau
-            let x = Math.random() * (this.canvas.width - 100);
-            let y = Math.random() * (this.canvas.height - 100);
-            let width = Math.random() * 80 + 20; // Taille aléatoire
-            let height = Math.random() * 60 + 20;
-            this.obstacles.push(new Obstacle(x, y, width, height));
+        for (let i = 0; i < this.level + 2; i++) {
+            let pos = this.getSafePosition(this.player.x, this.player.y);
+            this.obstacles.push(new Obstacle(pos.x, pos.y, 80, 40));
         }
     
-        this.objetsGraphiques = [this.player, this.exit, ...this.obstacles];
+        this.traps = [];
+        for (let i = 0; i < this.level; i++) {
+            let pos = this.getSafePosition(this.player.x, this.player.y);
+            this.traps.push(new Trap(pos.x, pos.y, 40, 40));
+        }
     
-        console.log(`Niveau ${this.level} chargé !`);
+        this.bonuses = [];
+        if (Math.random() > 0.5) {
+            let pos = this.getSafePosition(this.player.x, this.player.y);
+            this.bonuses.push(new Bonus(pos.x, pos.y));
+        }
+    
+        this.enemies = [];
+        let enemySpeed = 1 + this.level * 0.2; // Augmente progressivement
+        for (let i = 0; i < this.level; i++) {
+            let pos = this.getSafePosition(this.player.x, this.player.y);
+            this.enemies.push(new Enemy(pos.x, pos.y, enemySpeed));
+        }
+    
+        this.objetsGraphiques = [this.player, this.exit, ...this.obstacles, ...this.traps, ...this.bonuses, ...this.enemies];
+    
+        this.startTimer();
     }
+    
+    
+    
     
 }

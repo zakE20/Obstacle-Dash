@@ -13,7 +13,6 @@ export default class Obstacle extends ObjetGraphique {
         ctx.fillStyle = gradient;
         ctx.fillRect(this.x, this.y, this.width, this.height);
     
-        // Effet brique
         ctx.strokeStyle = "black";
         ctx.lineWidth = 1;
         for (let i = this.x; i < this.x + this.width; i += 20) {
