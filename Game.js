@@ -79,10 +79,10 @@ export default class Game {
             if (Collisions.checkCollision(this.player, enemy)) {
                 this.lives--; // Perdre une vie
                 if (this.lives <= 0) {
-                    this.gameOver();  // Appel à gameOver si toutes les vies sont perdues
-                    return; // Empêcher toute autre logique si le joueur est déjà mort
+                    this.gameOver(); 
+                    return; 
                 } else {
-                    this.player.x = 50;  // Réinitialiser la position du joueur
+                    this.player.x = 50;  
                     this.player.y = 50;
                     alert(`💔 Oups, il te reste ${this.lives} vies !`);
                 }
@@ -190,7 +190,7 @@ export default class Game {
 
         alert("💀 GAME OVER ! Vous avez perdu toutes vos vies !");
         setTimeout(() => {
-            window.location.reload();  // Redémarre le jeu après 5 secondes
+            window.location.reload();  
         }, 5000);
     }
 
