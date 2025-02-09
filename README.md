@@ -1,6 +1,6 @@
 # Obstacle-Dash : Jeu d'Evasion
 
-![Obstacle-Dash](./imag.png)
+![Obstacle-Dash](./image.png)
 
 ## Description
 Obstacle-Dash est un jeu d'aventure où vous incarnez un personnage devant naviguer à travers un terrain semé d'obstacles, d'ennemis et de pièges. Votre objectif est de survivre, de collecter des bonus et d'éviter les ennemis pour atteindre la sortie avant la fin du temps imparti. Chaque niveau devient progressivement plus difficile avec des ennemis plus rapides et des pièges de plus en plus complexes.
