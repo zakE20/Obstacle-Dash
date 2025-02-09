@@ -8,7 +8,9 @@ export default class Bonus extends ObjetGraphique {
     draw(ctx) {
         ctx.fillStyle = "green";
         ctx.beginPath();
-        ctx.arc(this.x + 10, this.y + 10, 10, 0, Math.PI * 2);
+        ctx.moveTo(this.x + 10, this.y + 5);
+        ctx.bezierCurveTo(this.x, this.y - 10, this.x - 20, this.y + 10, this.x + 10, this.y + 20);
+        ctx.bezierCurveTo(this.x + 40, this.y + 10, this.x + 20, this.y - 10, this.x + 10, this.y + 5);
         ctx.fill();
     }
 }

@@ -4,6 +4,9 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
+    background-image: url('image.png');
+    background-size: cover;
+    background-position: center;
 }
 canvas {
     border: 1px solid black; }
