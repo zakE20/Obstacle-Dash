@@ -9,7 +9,7 @@ import Enemy from "./Enemy.js";
 export default class Game {
     constructor(canvas) {
         this.canvas = canvas;
-        this.lives = 3;  
+        this.lives = 3;  // Nombre de vies du joueur
 
         this.ctx = this.canvas.getContext("2d");
 
@@ -41,7 +41,7 @@ export default class Game {
         this.loadNextLevel();
     }
 
-    demarrer() {
+    start() {
         this.startTimer();
         requestAnimationFrame(this.mainLoop.bind(this));
     }
@@ -52,7 +52,7 @@ export default class Game {
         requestAnimationFrame(this.mainLoop.bind(this));
     }
 
-    mettreAJour() {
+    update() {
         this.movePlayer();
         this.checkWin();
 
@@ -67,21 +67,22 @@ export default class Game {
         this.bonuses.forEach((bonus, index) => {
             if (Collisions.checkCollision(this.player, bonus)) {
                 if (this.lives < 3) {
-                    this.lives++; 
+                    this.lives++; // Gagner une vie (max 3)
                 }
-                this.bonuses.splice(index, 1); 
+                this.bonuses.splice(index, 1); // Supprimer le bonus
             }
         });
 
+        // Vérifier les collisions avec les ennemis (perdre une vie)
         this.enemies.forEach(enemy => {
             enemy.moveTowards(this.player);
             if (Collisions.checkCollision(this.player, enemy)) {
                 this.lives--; // Perdre une vie
                 if (this.lives <= 0) {
-                    this.gameOver(); // Fin du jeu si toutes les vies sont perdues
+                    this.gameOver();  // Appel à gameOver si toutes les vies sont perdues
+                    return; // Empêcher toute autre logique si le joueur est déjà mort
                 } else {
-                    // Remettre le joueur au point de départ si une vie est perdue
-                    this.player.x = 50;  
+                    this.player.x = 50;  // Réinitialiser la position du joueur
                     this.player.y = 50;
                     alert(`💔 Oups, il te reste ${this.lives} vies !`);
                 }
@@ -112,13 +113,13 @@ export default class Game {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
-    gererTouche(event, isPressed) {
+    handleKey(event, isPressed) {
         if (event.key in this.inputStates) {
             this.inputStates[event.key] = isPressed;
         }
     }
 
-    deplacerJoueur() {
+    movePlayer() {
         let oldX = this.player.x;
         let oldY = this.player.y;
 
@@ -136,7 +137,7 @@ export default class Game {
         this.player.y = Math.max(0, Math.min(this.canvas.height - this.player.height, this.player.y));
     }
 
-    obtenirPositionSecurisee(avoidX, avoidY, margin = 50) {
+    getSafePosition(avoidX, avoidY, margin = 50) {
         let x, y;
         do {
             x = Math.random() * (this.canvas.width - 100);
@@ -189,7 +190,7 @@ export default class Game {
 
         alert("💀 GAME OVER ! Vous avez perdu toutes vos vies !");
         setTimeout(() => {
-            window.location.reload();
+            window.location.reload();  // Redémarre le jeu après 5 secondes
         }, 5000);
     }
 
